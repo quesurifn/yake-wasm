@@ -1,11 +1,9 @@
-pub mod keywords;
-
 fn main() {
     use std::time::Instant;
     let now = Instant::now();
 
     let text = r#"
-    Sources tell us that Google is acquiring Kaggle, a platform that hosts data science and machine learning 
+    Google is acquiring data science community Kaggle. Sources tell us that Google is acquiring Kaggle, a platform that hosts data science and machine learning 
     competitions. Details about the transaction remain somewhat vague, but given that Google is hosting its Cloud 
     Next conference in San Francisco this week, the official announcement could come as early as tomorrow. 
     Reached by phone, Kaggle co-founder CEO Anthony Goldbloom declined to deny that the acquisition is happening. 

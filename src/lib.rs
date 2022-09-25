@@ -43,12 +43,14 @@ struct YakeCandidate {
 
 #[derive(Debug, Clone)]
 pub struct ResultItem {
+    raw: String,
     keyword: String,
     score: f64,
 }
 impl ResultItem {
-    fn new(keyword: String, score: f64) -> ResultItem {
+    fn new(raw: String, keyword: String, score: f64) -> ResultItem {
         ResultItem {
+            raw,
             keyword,
             score,
         }
@@ -98,7 +100,7 @@ impl Yake {
     pub fn new(ngram: Option<usize>, remove_duplicaes: Option<bool>, punctuation: Option<HashSet<String>>, stopwords: Option<HashSet<String>>) -> Yake {
         let default_stopwords = stopwords.unwrap_or(stopwords::StopWords::new().words);
         let default_punctuation = punctuation.unwrap_or(HashSet::from_iter( vec!["!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ",", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"].iter().map(|&s| s.to_string())));
-        let default_ngram = ngram.unwrap_or(2);
+        let default_ngram = ngram.unwrap_or(3);
         let default_remove_duplicates = remove_duplicaes.unwrap_or(true);
         Yake {
             config: Config {
@@ -123,7 +125,7 @@ impl Yake {
         let built_features = self.feature_extraction(built_contexts.0, built_contexts.1, built_contexts.2);
         let weighted_candidates = self.candidate_weighting(built_features.0, built_features.1, selected_candidates);
 
-        let mut results_vec = weighted_candidates.0.clone().iter().map(|(k, v)| ResultItem::new(k.to_string(), *v)).collect::<Vec<ResultItem>>();
+        let mut results_vec = weighted_candidates.0.clone().iter().map(|(k, v)| ResultItem::new(weighted_candidates.1.get(k).unwrap().to_string(),   k.to_string(), *v)).collect::<Vec<ResultItem>>();
         results_vec.sort_by(|a, b| a.score.partial_cmp(&b.score).unwrap());
 
         if self.config.remove_duplicates {
@@ -141,7 +143,7 @@ impl Yake {
             results_vec = non_redundant_best;
         }
 
-        results_vec.iter().take(min(default_n, results_vec.len())).map(|x| ResultItem { keyword: x.keyword.to_owned(), score: x.score }).collect::<Vec<ResultItem>>()
+        results_vec.iter().take(min(default_n, results_vec.len())).map(|x| ResultItem { raw: x.raw.to_owned(), keyword: x.keyword.to_owned(), score: x.score }).collect::<Vec<ResultItem>>()
     }
     
 
@@ -242,7 +244,6 @@ impl Yake {
             }
         }).collect::<Vec<usize>>();
 
-
         let std_tf = stddev(tf_nsw.iter().map(|x| *x as f64));
         let mean_tf = mean(tf_nsw.iter().map(|x| *x as f64));
         let max_tf = *tf.iter().max().unwrap() as f64;
@@ -299,8 +300,6 @@ impl Yake {
             cand.different /= sentences.len() as f64;
             cand.weight = (cand.relatedness * cand.position) / (cand.casing + (cand.frequency / cand.relatedness) + ( cand.different / cand.relatedness));
         
-
-            
             features.insert(key.to_string(), cand);
         }
 
@@ -413,6 +412,7 @@ impl Yake {
                 }
             }
         }
+
         candidates
     }
 
@@ -424,6 +424,7 @@ impl Yake {
 
             for j in 0..sentence.length {
                 for k in j+1..min(j + 1 + skip, sentence.length + 1) {
+
                     let words = sentence.words[j..k].to_vec();                
                     let stems = sentence.stems[j..k].to_vec();
                     let sentence_id = idx;
@@ -447,6 +448,8 @@ impl Yake {
                 }
             }
         }
+
+        
 
         (candidates, sentences)
     }
