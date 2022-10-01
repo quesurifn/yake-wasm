@@ -1,14 +1,3 @@
-# YAKE (Yet Another Keyword Extractor) RUST
-
-Yake is based on this paper: https://repositorio.inesctec.pt/server/api/core/bitstreams/ef121a01-a0a6-4be8-945d-3324a58fc944/content
-
-Yake is a language agnostic statistical keyword extractor weighing several factors such as acronyms, position in paragraph, capitalization, how many sentences the keyword appears in, stopwords, punctuation and more. 
-
-
-
-## Example 
-
-```
 import * as yake from './pkg/yake_wasm.js'
 console.time('yake benchmark');
 const instance = new yake.Yake();
@@ -39,36 +28,6 @@ const testString = `
 const results = instance.get_n_best(testString)
 console.log(results)
 console.timeEnd('yake benchmark');
-```
-
-Result:
-
-```
-  { raw: 'kaggle', keyword: 'kaggle', score: 0.034743798859937204 },
-  { raw: 'google', keyword: 'google', score: 0.03946072940468415 },
-  { raw: 'data', keyword: 'data', score: 0.23971332973044301 },
-  { raw: 'science', keyword: 'science', score: 0.25215955136759277 },
-  {
-    raw: 'acquiring kaggle',
-    keyword: 'acquiring kaggle',
-    score: 0.3017882425537463
-  },
-  {
-    raw: 'data science',
-    keyword: 'data science',
-    score: 0.30873986543219967
-  },
-  { raw: 'acquiring', keyword: 'acquiring', score: 0.364289463693419 },
-  { raw: 'platform', keyword: 'platform', score: 0.39586953475013703 },
-  { raw: 'goldbloom', keyword: 'goldbloom', score: 0.3981554971375386 },
-  {
-    raw: 'google cloud',
-    keyword: 'google cloud',
-    score: 0.40955463454967833
-  }
-]
-```
-
 
 
 
