@@ -1,4 +1,4 @@
-import * as yake from './pkg/yake_wasm.js'
+import * as yake from '../pkg/yake_wasm.js'
 console.time('yake benchmark');
 const instance = new yake.Yake();
 const testString = `
