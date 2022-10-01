@@ -1,4 +1,4 @@
-# YAKE (Yet Another Keyword Extractor) RUST
+# YAKE (Yet Another Keyword Extractor) Rust WASM
 
 Yake is based on this paper: https://repositorio.inesctec.pt/server/api/core/bitstreams/ef121a01-a0a6-4be8-945d-3324a58fc944/content
 

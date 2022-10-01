@@ -1,10 +1,10 @@
 [package]
 name = "yake-wasm"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["Kyle Fahey <kyle.c.r.fahey@gmail.com>"]
 keywords = ["wasm", "yake", "keywords", "keyword extraction"]
-description = "Yake (Yet Another Keyword Extractor) in Rust"
+description = "Yake (Yet Another Keyword Extractor)"
 license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
