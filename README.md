@@ -67,6 +67,7 @@ Result:
     score: 0.40955463454967833
   }
 ]
+yake benchmark: 12.124ms
 ```
 
 
