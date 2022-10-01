@@ -1,7 +1,9 @@
+extern crate wee_alloc;
 use std::collections::{HashMap, HashSet};
 use std::cmp::{min, max};
 use std::iter::FromIterator;
 use stats::{stddev, mean, median};
+use serde::{Serialize, Deserialize};
 
 mod levenshtein;
 mod preprocessor;
@@ -12,7 +14,13 @@ type Candidates = HashMap<String, PreCandidate>;
 type Features =  HashMap<String, YakeCandidate>;
 type Words = HashMap<String, Vec<Occurrence>>;
 type Contexts = HashMap<String, (Vec<String>, Vec<String>)>;
+use wasm_bindgen::prelude::*;
 
+
+
+// Use `wee_alloc` as the global allocator.
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[derive(PartialEq, Eq, Hash, Debug)]
 struct Occurrence {
@@ -41,7 +49,8 @@ struct YakeCandidate {
     
 }
 
-#[derive(Debug, Clone)]
+#[wasm_bindgen]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct ResultItem {
     raw: String,
     keyword: String,
@@ -83,6 +92,8 @@ struct PreCandidate {
     pub sentence_ids: Vec<usize>,
 }
 
+
+#[derive(Debug, Clone)]
 struct Config {
     pub ngram: usize,
     pub punctuation: HashSet<String>,
@@ -93,15 +104,22 @@ struct Config {
     dedupe_lim: f64,
 }
 
+
+#[wasm_bindgen]
+#[derive(Debug, Clone)]
 pub struct Yake {
-    config : Config,
+    config: Config,
 }
+
+
+#[wasm_bindgen]
 impl Yake {
-    pub fn new(ngram: Option<usize>, remove_duplicaes: Option<bool>, punctuation: Option<HashSet<String>>, stopwords: Option<HashSet<String>>) -> Yake {
-        let default_stopwords = stopwords.unwrap_or(stopwords::StopWords::new().words);
-        let default_punctuation = punctuation.unwrap_or(HashSet::from_iter( vec!["!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ",", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"].iter().map(|&s| s.to_string())));
+    #[wasm_bindgen(constructor)]
+    pub fn new(ngram: Option<usize>, remove_duplicates: Option<bool>) -> Yake {
+        let default_stopwords = stopwords::StopWords::new().words;
+        let default_punctuation = HashSet::from_iter( vec!["!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ",", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"].iter().map(|&s| s.to_string()));
         let default_ngram = ngram.unwrap_or(3);
-        let default_remove_duplicates = remove_duplicaes.unwrap_or(true);
+        let default_remove_duplicates = remove_duplicates.unwrap_or(true);
         Yake {
             config: Config {
                 window_size: 2,
@@ -114,7 +132,7 @@ impl Yake {
         }
     }
 
-    pub fn get_n_best(&mut self, text: String, n: Option<usize>) -> Vec<ResultItem>{
+    pub fn get_n_best(&mut self, text: String, n: Option<usize>) -> Result<JsValue, JsValue> {
         let default_n = n.unwrap_or(10);
         let sentences = self.build_text(text);
         let selected_ngrams = self.ngram_selection(self.config.ngram, sentences);
@@ -143,7 +161,9 @@ impl Yake {
             results_vec = non_redundant_best;
         }
 
-        results_vec.iter().take(min(default_n, results_vec.len())).map(|x| ResultItem { raw: x.raw.to_owned(), keyword: x.keyword.to_owned(), score: x.score }).collect::<Vec<ResultItem>>()
+        let sorted_results = results_vec.iter().take(min(default_n, results_vec.len())).map(|x| ResultItem { raw: x.raw.to_owned(), keyword: x.keyword.to_owned(), score: x.score }).collect::<Vec<ResultItem>>();
+
+        Ok(serde_wasm_bindgen::to_value(&sorted_results)?)
     }
     
 
