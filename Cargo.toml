@@ -1,6 +1,6 @@
 [package]
 name = "yake-wasm"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 authors = ["Kyle Fahey <kyle.c.r.fahey@gmail.com>"]
 keywords = ["wasm", "yake", "keywords", "keyword extraction"]
@@ -21,6 +21,12 @@ js-sys = "0.3.6"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.4"
 wee_alloc = "0.4.5"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "console",
+]
 
 
 [target.wasm32-unknown-unknown]
