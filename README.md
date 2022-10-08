@@ -70,11 +70,6 @@ Result:
 yake benchmark: 12.124ms
 ```
 
-
-
-
-
-
 # Tests
 There are a limited amount of tests in the repo. To test ensure you have `wasm-pack` installed along with your normal Rust based tooling.
 
