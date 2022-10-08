@@ -159,7 +159,7 @@ impl Yake {
         if self.config.remove_duplicates {
             let mut non_redundant_best = Vec::<ResultItem>::new();
             for candidate in results_vec {
-                if weighted_candidates.5.contains_key(&candidate.keyword) {
+                if weighted_candidates.5.contains_key(&candidate.raw) {
                     continue;
                 }
                 if self.is_redundant(candidate.clone().keyword, non_redundant_best.iter().map(|x| x.keyword.to_string()).collect::<Vec<String>>()) {
@@ -336,7 +336,7 @@ impl Yake {
         
             features.insert(key.to_string(), cand);
         }
-        
+
         (features, contexts, words, sentences )
     }
 
