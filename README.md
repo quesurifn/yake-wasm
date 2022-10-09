@@ -1,6 +1,7 @@
-# YAKE (Yet Another Keyword Extractor) Rust WASM
+# Enhanced YAKE (Yet Another Keyword Extractor) 
+## WASM (Rust)
 
-Yake is based on this paper: https://repositorio.inesctec.pt/server/api/core/bitstreams/ef121a01-a0a6-4be8-945d-3324a58fc944/content
+Yake is based on this [paper](https://repositorio.inesctec.pt/server/api/core/bitstreams/ef121a01-a0a6-4be8-945d-3324a58fc944/content) 
 
 Yake is a language agnostic statistical keyword extractor weighing several factors such as acronyms, position in paragraph, capitalization, how many sentences the keyword appears in, stopwords, punctuation and more.
 
@@ -45,7 +46,7 @@ console.log(results)
 console.timeEnd('yake benchmark');
 ```
 
-Result:
+*Result*:
 
 ```
 [
@@ -107,4 +108,6 @@ yake benchmark: 12.124ms
 There are a limited amount of tests in the repo. To test ensure you have `wasm-pack` installed along with your normal Rust based tooling.
 
 To run: `wasm-pack test --node --lib`
+
+
 
