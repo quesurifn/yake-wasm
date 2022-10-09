@@ -1,6 +1,6 @@
 [package]
 name = "yake-wasm"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 authors = ["Kyle Fahey <kyle.c.r.fahey@gmail.com>"]
 keywords = ["wasm", "yake", "keywords", "keyword extraction"]

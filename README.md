@@ -48,16 +48,16 @@ console.timeEnd('yake benchmark');
 Result:
 
 ```
- [
+[
   {
     "keyword": "kaggle",
     "raw": "Kaggle",
-    "score": 0.034743798859937204
+    "score": 0.20846279315962324
   },
   {
     "keyword": "google",
     "raw": "Google",
-    "score": 0.03946072940468415
+    "score": 0.23676437642810488
   },
   {
     "keyword": "acquiring kaggle",
@@ -70,11 +70,6 @@ Result:
     "score": 0.30873986543219967
   },
   {
-    "keyword": "goldbloom",
-    "raw": "Goldbloom",
-    "score": 0.3981554971375386
-  },
-  {
     "keyword": "google cloud",
     "raw": "Google Cloud",
     "score": 0.40955463454967833
@@ -85,11 +80,6 @@ Result:
     "score": 0.5018536215405839
   },
   {
-    "keyword": "cloud",
-    "raw": "Cloud",
-    "score": 0.5218291888896703
-  },
-  {
     "keyword": "acquiring data science",
     "raw": "acquiring data science",
     "score": 0.5494143207629893
@@ -98,6 +88,16 @@ Result:
     "keyword": "san francisco",
     "raw": "San Francisco",
     "score": 0.7636151899513093
+  },
+  {
+    "keyword": "ceo anthony goldbloom",
+    "raw": "CEO Anthony Goldbloom",
+    "score": 0.8166005339007906
+  },
+  {
+    "keyword": "science community kaggle",
+    "raw": "science community Kaggle",
+    "score": 0.8690005548383123
   }
 ]
 yake benchmark: 12.124ms
