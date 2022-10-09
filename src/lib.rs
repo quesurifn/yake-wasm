@@ -17,6 +17,7 @@ type Features =  HashMap<String, YakeCandidate>;
 type Words = HashMap<String, Vec<Occurrence>>;
 type Contexts = HashMap<String, (Vec<String>, Vec<String>)>;
 type Results = Vec<ResultItem>;
+type DedupeSubgram = HashMap<String, bool>;
 
 extern crate web_sys;
 
@@ -151,7 +152,7 @@ impl Yake {
         let built_words = self.vocabulary_building(selected_ngrams.1);
         let built_contexts = self.context_building(built_words.0, built_words.1);
         let built_features = self.feature_extraction(built_contexts.0, built_contexts.1, built_contexts.2);
-        let weighted_candidates = self.candidate_weighting(built_features.0, built_features.1, selected_candidates);
+        let weighted_candidates = self.candidate_weighting(built_features.0, built_features.1, selected_candidates.0, selected_candidates.1);
 
         let mut results_vec = weighted_candidates.0.clone().iter().map(|(k, v)| ResultItem::new(weighted_candidates.4.get(&k.to_string()).unwrap().to_string(),   k.to_string(), *v)).collect::<Vec<ResultItem>>();
         results_vec.sort_by(|a, b| a.score.partial_cmp(&b.score).unwrap());
@@ -159,9 +160,6 @@ impl Yake {
         if self.config.remove_duplicates {
             let mut non_redundant_best = Vec::<ResultItem>::new();
             for candidate in results_vec {
-                if weighted_candidates.5.contains_key(&candidate.raw) {
-                    continue;
-                }
                 if self.is_redundant(candidate.clone().keyword, non_redundant_best.iter().map(|x| x.keyword.to_string()).collect::<Vec<String>>()) {
                     continue;
                 }
@@ -192,7 +190,8 @@ impl Yake {
         sentences
     }
 
-    fn candidate_selection(&mut self, mut candidates: HashMap<String, PreCandidate>) -> HashMap<String, PreCandidate> {
+    fn candidate_selection(&mut self, mut candidates: HashMap<String, PreCandidate>) -> (HashMap<String, PreCandidate>, HashMap<String, bool>) {
+        let mut dedupe_subgrams = HashMap::<String, bool>::new();
         for (k, v) in candidates.clone() {
             if  self.config.stopwords.contains(&v.surface_forms[0][0].to_lowercase()) ||
                 self.config.stopwords.contains(&v.surface_forms[0].last().unwrap().to_lowercase()) || 
@@ -201,8 +200,14 @@ impl Yake {
             {
                 candidates.remove(&k);
             }
+            if v.surface_forms[0].len() > 1 {
+                for sf in v.surface_forms[0].clone() {
+                    dedupe_subgrams.insert(sf.to_string().to_lowercase(), true);
+                }
+            }
         }
-        candidates
+
+        (candidates, dedupe_subgrams)
     }
 
     fn vocabulary_building(&mut self, sentences: Vec<Sentence>) -> (Words, Sentences) {
@@ -268,7 +273,6 @@ impl Yake {
     }
 
     fn feature_extraction(&mut self, contexts: Contexts, words: Words, sentences: Sentences) -> (Features, Contexts, Words, Sentences) {
-        let mut ngram_dedupe = HashMap::<String, bool>::new();
         let tf = words.iter().map(|(_k,v)| v.len() ).collect::<Vec<usize>>();
         let tf_nsw = words.iter().filter_map(|(k,v)| {
             if !self.config.stopwords.contains(&k.to_owned()) {
@@ -340,12 +344,10 @@ impl Yake {
         (features, contexts, words, sentences )
     }
 
-    fn candidate_weighting(&mut self, features: Features, contexts: Contexts, candidates: Candidates) -> (HashMap<String, f64>,  HashMap<String, String>, HashMap<String, (Vec<String>, Vec<String>)>, HashMap<String, PreCandidate>, HashMap<String,String>, HashMap<String, bool>) {
+    fn candidate_weighting(&mut self, features: Features, contexts: Contexts, candidates: Candidates, dedupe_subgram: DedupeSubgram) -> (HashMap<String, f64>,  HashMap<String, String>, HashMap<String, (Vec<String>, Vec<String>)>, HashMap<String, PreCandidate>, HashMap<String,String>) {
         let mut final_weights = HashMap::<String, f64>::new();
         let mut surface_to_lexical = HashMap::<String, String>::new();
         let mut raw_lookup = HashMap::<String, String>::new();
-        let mut ngram_dedupe = HashMap::<String, bool>::new();
-
 
         for (_k, v) in candidates.clone() {
                 let lowercase_forms = v.surface_forms.iter().map(|w| w.join(" ").to_lowercase());
@@ -354,6 +356,12 @@ impl Yake {
                     let tokens = v.surface_forms[idx].iter().clone().map(|w| w.to_lowercase());
                     let mut prod_ = 1.0;
                     let mut sum_ = 0.0;
+
+                    // Dedup Subgram; Penalize subgrams
+                    if dedupe_subgram.contains_key(&candidate) {
+                        prod_ += 5.0;
+                    }
+
                     for (j, token) in tokens.clone().enumerate() {
                         let cand_value = match features.get_key_value(&token) {
                             Some(b) => b,
@@ -383,23 +391,16 @@ impl Yake {
                     if sum_ == -1.0 {
                         sum_ = 0.999999999;
                     }
-
                     let weight = prod_ / tf * (1.0 + sum_);
 
-                    let split_candidates = candidate.split(" ").collect::<Vec<&str>>();
-                    if split_candidates.len() > 1 {
-                        for splt_cand in split_candidates {
-                            ngram_dedupe.insert(splt_cand.to_string(), true);
-                        }
-                    }
-
+                  
                     final_weights.insert(candidate.to_string(), weight);
                     surface_to_lexical.insert(candidate.to_string(), v.lexical_form.join(" "));
                     raw_lookup.insert(candidate.to_string(), v.surface_forms[0].join(" ").clone());
                 } 
         }
 
-        (final_weights, surface_to_lexical, contexts, candidates, raw_lookup, ngram_dedupe)
+        (final_weights, surface_to_lexical, contexts, candidates, raw_lookup)
     }
 
     fn is_redundant(&mut self, cand: String, prev: Vec<String>) -> bool {
@@ -499,6 +500,7 @@ impl Yake {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
     use wasm_bindgen_test::wasm_bindgen_test;
 
     use crate::{Results, ResultItem};
@@ -536,12 +538,12 @@ mod tests {
             ResultItem{
                 raw: "Kaggle".to_owned(),
                 keyword: "kaggle".to_owned(),
-                score: 0.034743798859937204
+                score: 0.20846279315962324
               },
               ResultItem{
                 raw: "Google".to_owned(),
                 keyword: "google".to_owned(),
-                score: 0.03946072940468415
+                score: 0.23676437642810488
               },
               ResultItem{
                 raw: "acquiring Kaggle".to_owned(),
@@ -554,11 +556,6 @@ mod tests {
                 score: 0.30873986543219967
               },
               ResultItem{
-                raw: "Goldbloom".to_owned(),
-                keyword: "goldbloom".to_owned(),
-                score: 0.3981554971375386
-              },
-              ResultItem{
                 raw: "Google Cloud".to_owned(),
                 keyword: "google cloud".to_owned(),
                 score: 0.40955463454967833
@@ -569,11 +566,6 @@ mod tests {
                 score: 0.5018536215405839
               },
               ResultItem{
-                raw: "Cloud".to_owned(),
-                keyword: "cloud".to_owned(),
-                score: 0.5218291888896703
-              },
-              ResultItem{
                 raw: "acquiring data science".to_owned(),
                 keyword: "acquiring data science".to_owned(),
                 score: 0.5494143207629893
@@ -582,8 +574,20 @@ mod tests {
                 raw: "San Francisco".to_owned(),
                 keyword: "san francisco".to_owned(),
                 score: 0.7636151899513093
+              },
+              ResultItem{
+                raw: "CEO Anthony Goldbloom".to_owned(),
+                keyword: "ceo anthony goldbloom".to_owned(),
+                score: 0.8166005339007906
+              },
+              ResultItem{
+                raw: "science community Kaggle".to_owned(),
+                keyword: "science community kaggle".to_owned(),
+                score: 0.8690005548383123
               }
         ];
+
+        log!("{:?}", json!(results).to_string());
         assert_eq!(value.unwrap(), results);
     }
 

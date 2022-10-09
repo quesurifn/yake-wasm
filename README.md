@@ -8,8 +8,7 @@ However, this version of Yake makes a few optimizations to ensure the most accur
 
 - We assume that substrings of a complete ngram are should be removed. E.g. If data, science and data science are all candidates, data and science should be removed from candidacy to leave the fuller and more complete term "data science"
 
-
-
+- Coming Soon: Good keywords should be in the imperative mood in the simple present tense with nouns and limited adjectives. Soon, the algorithm will account for this.
 
 ## Example 
 
@@ -49,27 +48,56 @@ console.timeEnd('yake benchmark');
 Result:
 
 ```
-  { raw: 'Kaggle', keyword: 'kaggle', score: 0.034743798859937204 },
-  { raw: 'Google', keyword: 'google', score: 0.03946072940468415 },
-  { raw: 'data', keyword: 'data', score: 0.23971332973044301 },
-  { raw: 'science', keyword: 'science', score: 0.25215955136759277 },
+ [
   {
-    raw: 'acquiring Kaggle',
-    keyword: 'acquiring kaggle',
-    score: 0.3017882425537463
+    "keyword": "kaggle",
+    "raw": "Kaggle",
+    "score": 0.034743798859937204
   },
   {
-    raw: 'data science',
-    keyword: 'data science',
-    score: 0.30873986543219967
+    "keyword": "google",
+    "raw": "Google",
+    "score": 0.03946072940468415
   },
-  { raw: 'acquiring', keyword: 'acquiring', score: 0.364289463693419 },
-  { raw: 'platform', keyword: 'platform', score: 0.39586953475013703 },
-  { raw: 'Goldbloom', keyword: 'goldbloom', score: 0.3981554971375386 },
   {
-    raw: 'Google Cloud',
-    keyword: 'google cloud',
-    score: 0.40955463454967833
+    "keyword": "acquiring kaggle",
+    "raw": "acquiring Kaggle",
+    "score": 0.3017882425537463
+  },
+  {
+    "keyword": "data science",
+    "raw": "data science",
+    "score": 0.30873986543219967
+  },
+  {
+    "keyword": "goldbloom",
+    "raw": "Goldbloom",
+    "score": 0.3981554971375386
+  },
+  {
+    "keyword": "google cloud",
+    "raw": "Google Cloud",
+    "score": 0.40955463454967833
+  },
+  {
+    "keyword": "google cloud platform",
+    "raw": "Google Cloud Platform",
+    "score": 0.5018536215405839
+  },
+  {
+    "keyword": "cloud",
+    "raw": "Cloud",
+    "score": 0.5218291888896703
+  },
+  {
+    "keyword": "acquiring data science",
+    "raw": "acquiring data science",
+    "score": 0.5494143207629893
+  },
+  {
+    "keyword": "san francisco",
+    "raw": "San Francisco",
+    "score": 0.7636151899513093
   }
 ]
 yake benchmark: 12.124ms
